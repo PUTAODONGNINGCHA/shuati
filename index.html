@@ -44,17 +44,9 @@ header{
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border-bottom:1px solid var(--line);
   color:var(--ink);
-  padding:12px 22px;display:flex;align-items:center;gap:12px;
+  padding:10px 14px;display:flex;align-items:center;justify-content:center;gap:8px;
 }
-header .logo{
-  width:36px;height:36px;border-radius:13px;
-  background:var(--grad);
-  box-shadow:0 12px 30px rgba(79,70,229,.22);
-  display:grid;place-items:center;font-size:18px;
-  user-select:none;
-}
-header h1{font-size:17px;margin:0;font-weight:900;letter-spacing:.2px}
-header .spacer{flex:1}
+header .btn{flex:1;max-width:150px;text-align:center;line-height:1.2}
 
 /* ===== 按钮 ===== */
 .btn{
@@ -317,10 +309,8 @@ header .spacer{flex:1}
 
 /* ===== 移动端适配 ===== */
 @media (max-width:600px){
-  header{flex-wrap:wrap;padding:10px 12px;gap:8px}
-  header h1{font-size:16px}
-  header .spacer{display:none}
-  header .btn{padding:11px 12px;font-size:12.5px;line-height:1.2}
+  header{padding:8px 10px;gap:6px}
+  header .btn{padding:11px 8px;font-size:12.5px;line-height:1.2}
   .wrap{padding:12px 12px 32px}
   .card{padding:16px;border-radius:18px}
   #drop{padding:28px 12px}
@@ -337,7 +327,6 @@ header .spacer{flex:1}
 </head>
 <body>
 <header>
-  <span class="logo">📚</span><h1>刷题宝</h1>  <span class="spacer"></span>
   <button class="btn ghost" id="homeBtn">🏠 首页</button>
   <button class="btn ghost hidden" id="practiceBtn">题库练习</button>
   <button class="btn ghost hidden" id="examBtn">模拟考试</button>
