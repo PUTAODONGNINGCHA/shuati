@@ -172,7 +172,7 @@ header .btn{flex:1;max-width:150px;text-align:center;line-height:1.2}
 .fillin:focus{outline:none;border-color:rgba(79,70,229,.40);box-shadow:0 0 0 4px var(--ring)}
 
 .nav{display:flex;align-items:center;gap:10px;margin:16px 0 4px}
-.nav .feedback{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
+.nav .feedback{flex:1;min-width:0;text-align:right;line-height:1.5}
 
 #explain{
   margin-top:16px;
@@ -304,6 +304,8 @@ header .btn{flex:1;max-width:150px;text-align:center;line-height:1.2}
 
 /* ===== 移动端适配 ===== */
 @media (max-width:600px){
+  .nav{flex-wrap:wrap;row-gap:4px}
+  .nav .feedback{order:9;flex-basis:100%;white-space:normal;overflow:visible;text-overflow:clip;text-align:center}
   header{padding:8px 8px;gap:5px}
   header .btn{padding:11px 6px;font-size:12.5px;line-height:1.2}
 }
