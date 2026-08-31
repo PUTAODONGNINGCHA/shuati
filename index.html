@@ -277,12 +277,6 @@ header .btn{flex:1;max-width:150px;text-align:center;line-height:1.2}
 .bc-meta{font-size:13px;color:var(--sub)}
 
 /* ===== 横幅 ===== */
-#selBanner{
-  background:rgba(79,70,229,.06);
-  border:1px solid var(--indigoBd);
-  border-radius:16px;padding:14px 16px;margin-bottom:14px;
-  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
-}
 #resumeBanner{
   background:rgba(245,158,11,.10);
   border:1px solid rgba(245,158,11,.28);
@@ -341,12 +335,6 @@ header .btn{flex:1;max-width:150px;text-align:center;line-height:1.2}
       <span class="grow"></span>
       <button class="btn" id="homeTplBtn">下载模板</button>
       <button class="btn primary" id="importNewBtn">＋ 导入新题库</button>
-    </div>
-    <div id="selBanner" class="hidden">
-      <div style="font-weight:700">当前题库：<span id="selName" style="color:var(--brand-d)"></span></div>
-      <span class="grow"></span>
-      <button class="btn primary" id="homePracticeBtn">题库练习</button>
-      <button class="btn" id="homeExamBtn">模拟考试</button>
     </div>
     <div id="resumeBanner" class="hidden">
       <span id="resumeInfo" style="font-size:14px;font-weight:700"></span>
@@ -586,9 +574,6 @@ function renderHome(){
     card.querySelector("[data-del]").onclick=function(e){e.stopPropagation();delBank(b.id)};
     wrap.appendChild(card);
   });
-  var sel=App.selectedBankId?getBank(App.selectedBankId):null;
-  $("selBanner").classList.toggle("hidden",!sel);
-  if(sel)$("selName").textContent=sel.name;
   renderResumeBanner();
 }
 
@@ -949,8 +934,6 @@ function bind(){
   $("homeTplBtn").onclick=downloadTemplate;
   $("homeBtn").onclick=function(){show("homeView");renderHome();};
   $("importNewBtn").onclick=function(){show("importView")};
-  $("homePracticeBtn").onclick=function(){startSession(false)};
-  $("homeExamBtn").onclick=startExam;
   $("practiceBtn").onclick=function(){startSession(false)};
   $("examBtn").onclick=startExam;
   $("histBtn").onclick=function(){openHistory("homeView")};
