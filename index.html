@@ -502,10 +502,9 @@ function saveHistory(arr){localStorage.setItem(EXAM_HISTORY_KEY,JSON.stringify(a
 function fmtTime(d){var p=function(n){return String(n).padStart(2,"0")};return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes())}
 function refreshHeaderButtons(){
   var hasBank=!!App.bank,hasHist=loadHistory().length>0;
-  var hasWrong=hasBank&&(App.bank.wrong||[]).length>0;
   $("practiceBtn").classList.toggle("hidden",!hasBank);
   $("examBtn").classList.toggle("hidden",!hasBank);
-  $("wrongBtn").classList.toggle("hidden",!hasWrong);
+  $("wrongBtn").classList.toggle("hidden",!hasBank);
   $("histBtn").classList.toggle("hidden",!(hasBank||hasHist));
 }
 function openHistory(returnTo){
