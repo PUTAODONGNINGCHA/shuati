@@ -321,6 +321,19 @@ header .btn{flex:1;max-width:150px;text-align:center;line-height:1.2}
   .actions{gap:8px}
   .actions .btn{padding:9px 11px;font-size:13px}
 }
+
+/* ===== PC 一屏式练习布局 ===== */
+@media (min-width:601px){
+  body.studying{height:100vh;overflow:hidden;display:flex;flex-direction:column}
+  body.studying header{flex:none;position:static}
+  body.studying .wrap{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;padding-bottom:16px}
+  body.studying #studyView{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+  body.studying #qarea{flex:1;min-height:0;overflow-y:auto;padding-right:6px}
+  body.studying #studyView .topbar,
+  body.studying #studyView .nav,
+  body.studying #studyView .actions,
+  body.studying #studyView .ctrls{flex:none}
+}
 </style>
 </head>
 <body>
@@ -389,9 +402,11 @@ header .btn{flex:1;max-width:150px;text-align:center;line-height:1.2}
       <div class="stat">✔<b id="okText">0</b> ✘<b id="noText">0</b></div>
     </div>
     <div id="qTag" class="tag single">单选</div>
-    <div class="qtext" id="qText"></div>
-    <div id="options"></div>
-    <div id="explain"><div class="h">解析</div><div id="explainText"></div></div>
+    <div id="qarea">
+      <div class="qtext" id="qText"></div>
+      <div id="options"></div>
+      <div id="explain"><div class="h">解析</div><div id="explainText"></div></div>
+    </div>
     <div class="nav">
       <button class="btn" id="prevBtn">← 上一题</button>
     </div>
@@ -489,7 +504,7 @@ var App={bank:null,selectedBankId:null,session:null,sel:new Set(),userText:"",su
 var $=function(id){return document.getElementById(id)};
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]})}
 function toast(msg){var t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove("show")},1800)}
-function show(view){["homeView","importView","studyView","doneView","historyView","examWrongView"].forEach(function(v){$(v).classList.toggle("hidden",v!==view)})}
+function show(view){["homeView","importView","studyView","doneView","historyView","examWrongView"].forEach(function(v){$(v).classList.toggle("hidden",v!==view)});document.body.classList.toggle("studying",view==="studyView")}
 
 /* 历史成绩 */
 var EXAM_HISTORY_KEY="shuati_exam_history_v1";
@@ -811,7 +826,8 @@ function renderQuestion(){
     sb.textContent="提交答案";
   }
   updateTop();updateNav();snapshotSession();
-  window.scrollTo({top:0,behavior:"smooth"});
+  var qa=$("qarea");
+  if(qa){qa.scrollTop=0}else{window.scrollTo({top:0,behavior:"smooth"})}
 }
 function renderOptions(q){
   var wrap=$("options");wrap.innerHTML="";
