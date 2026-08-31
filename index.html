@@ -56,6 +56,7 @@ header .btn{flex:1;max-width:150px;text-align:center;line-height:1.2}
   border-radius:14px;
   padding:10px 14px;
   font-size:13.5px;
+  line-height:1.2;
   cursor:pointer;font-weight:900;
   transition:transform .12s,box-shadow .12s,background .12s,border-color .12s;
   box-shadow:0 1px 0 rgba(255,255,255,.9) inset;
@@ -171,7 +172,7 @@ header .btn{flex:1;max-width:150px;text-align:center;line-height:1.2}
 .fillin:focus{outline:none;border-color:rgba(79,70,229,.40);box-shadow:0 0 0 4px var(--ring)}
 
 .nav{display:flex;align-items:center;gap:10px;margin:16px 0 4px}
-.actions{margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.nav .feedback{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
 
 #explain{
   margin-top:16px;
@@ -318,8 +319,6 @@ header .btn{flex:1;max-width:150px;text-align:center;line-height:1.2}
   .fillin{font-size:16px}
   .done .score{font-size:40px}
   .done .row{gap:18px}
-  .actions{gap:8px}
-  .actions .btn{padding:9px 11px;font-size:13px}
 }
 
 /* ===== PC 一屏式练习布局 ===== */
@@ -331,7 +330,6 @@ header .btn{flex:1;max-width:150px;text-align:center;line-height:1.2}
   body.studying #qarea{flex:1;min-height:0;overflow-y:auto;padding-right:6px}
   body.studying #studyView .topbar,
   body.studying #studyView .nav,
-  body.studying #studyView .actions,
   body.studying #studyView .ctrls{flex:none}
 }
 </style>
@@ -409,11 +407,9 @@ header .btn{flex:1;max-width:150px;text-align:center;line-height:1.2}
     </div>
     <div class="nav">
       <button class="btn" id="prevBtn">← 上一题</button>
-    </div>
-    <div class="actions">
       <span id="fb" class="feedback"></span>
       <span class="grow"></span>
-      <button class="btn primary hidden" id="submitBtn">提交答案</button>
+      <button class="btn hidden" id="submitBtn">提交答案</button>
     </div>
     <div class="ctrls" id="ctrls">
       <label>题型
