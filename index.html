@@ -394,8 +394,6 @@ header .btn{flex:1;max-width:150px;text-align:center;line-height:1.2}
     <div id="explain"><div class="h">解析</div><div id="explainText"></div></div>
     <div class="nav">
       <button class="btn" id="prevBtn">← 上一题</button>
-      <span class="grow"></span>
-      <button class="btn" id="nextBtn">下一题 →</button>
     </div>
     <div class="actions">
       <span id="fb" class="feedback"></span>
@@ -892,7 +890,7 @@ function next(){
   renderQuestion();
 }
 function updateNav(){
-  var s=App.session;$("prevBtn").disabled=(s.pos===0);$("nextBtn").disabled=(s.pos>=s.order.length-1)
+  var s=App.session;$("prevBtn").disabled=(s.pos===0)
 }
 function updateTop(){
   var s=App.session,total=s.order.length,done=s.answered.size;
@@ -954,7 +952,7 @@ function bind(){
   $("wrongBtn").onclick=function(){$("wrongChk").checked=true;startSession(true)};
   $("examBtn").onclick=startExam;
   $("histBtn").onclick=function(){openHistory("homeView")};
-  $("submitBtn").onclick=function(){if(App.submitted)next();else submit()};$("prevBtn").onclick=prev;$("nextBtn").onclick=next;
+  $("submitBtn").onclick=function(){if(App.submitted)next();else submit()};$("prevBtn").onclick=prev;
   $("againBtn").onclick=function(){if(App.session&&App.session.mode==="exam")startExam();else startSession(false)};
   $("wrongAgainBtn").onclick=function(){$("wrongChk").checked=true;startSession(true)};
   $("resumeBtn").onclick=resumeSession;
