@@ -1,0 +1,11 @@
+# gh CLI 临时文件（安装包与解压目录，不入库）
+gh.zip
+gh-tmp/
+
+# 工具/助手内存目录
+.workbuddy/
+
+# 操作系统/编辑器
+Thumbs.db
+.DS_Store
+*.log
