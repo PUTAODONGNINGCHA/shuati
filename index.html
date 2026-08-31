@@ -419,7 +419,6 @@ header .btn{flex:1;max-width:150px;text-align:center;line-height:1.2}
       </label>
       <label><input type="checkbox" id="shuffleChk"> 随机顺序</label>
       <label><input type="checkbox" id="wrongChk"> 只练错题</label>
-      <label><input type="checkbox" id="autoChk"> 自动下一题</label>
     </div>
   </div>
 
@@ -593,8 +592,8 @@ function renderHome(){
 }
 
 /* 进度与设置保存 */
-function savePrefs(){try{localStorage.setItem(LS_PREFS,JSON.stringify({type:$("typeSel").value,shuffle:$("shuffleChk").checked,auto:$("autoChk").checked}))}catch(e){}}
-function loadPrefs(){try{var p=JSON.parse(localStorage.getItem(LS_PREFS));if(!p)return;$("typeSel").value=p.type||"all";$("shuffleChk").checked=!!p.shuffle;$("autoChk").checked=!!p.auto}catch(e){}}
+function savePrefs(){try{localStorage.setItem(LS_PREFS,JSON.stringify({type:$("typeSel").value,shuffle:$("shuffleChk").checked}))}catch(e){}}
+function loadPrefs(){try{var p=JSON.parse(localStorage.getItem(LS_PREFS));if(!p)return;$("typeSel").value=p.type||"all";$("shuffleChk").checked=!!p.shuffle}catch(e){}}
 function snapshotSession(){
   var s=App.session;if(!s||!App.bank)return;
   try{localStorage.setItem(LS_SESSION,JSON.stringify({bankId:App.bank.id,mode:s.mode,wrongOnly:!!s.wrongOnly,order:s.order,pos:s.pos,correct:s.correct,wrong:s.wrong,answered:[...s.answered],wrongIds:[...s.wrongIds],results:s.results,curSel:[...App.sel],curText:App.userText,savedAt:Date.now()}))}catch(e){}
@@ -873,7 +872,7 @@ function submit(){
   updateTop();updateNav();snapshotSession();
   $("submitBtn").classList.remove("hidden");$("submitBtn").textContent="下一题 ▶";
   if(App.session.mode!=="exam")$("explain").classList.add("show");
-  if(App.session.mode==="exam"||$("autoChk").checked)setTimeout(next,900);
+  if(App.session.mode==="exam")setTimeout(next,900);
 }
 function formatAnswer(q){
   var ans=q.answer||"";
@@ -979,7 +978,6 @@ function bind(){
   $("shuffleChk").onchange=function(){savePrefs();if(App.session)startSession($("wrongChk").checked)};
   $("wrongChk").onchange=function(){savePrefs();if(App.session)startSession($("wrongChk").checked)};
   $("typeSel").onchange=function(){savePrefs();if(App.session)startSession($("wrongChk").checked)};
-  $("autoChk").onchange=savePrefs;
 }
 
 /* 启动 */
