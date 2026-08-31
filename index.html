@@ -135,6 +135,12 @@ header .spacer{flex:1}
       <button class="btn primary" id="homePracticeBtn">题库练习</button>
       <button class="btn" id="homeExamBtn">模拟考试</button>
     </div>
+    <div id="resumeBanner" class="hidden" style="background:#fff7e0;border:1px solid #eedc9a;border-radius:12px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span id="resumeInfo" style="font-size:14px"></span>
+      <span class="grow"></span>
+      <button class="btn primary" id="resumeBtn">▶ 继续刷题</button>
+      <button class="btn" id="discardBtn">放弃进度</button>
+    </div>
     <div id="bankList"></div>
     <div id="homeEmpty" style="text-align:center;color:var(--sub);padding:40px 0">
       <div style="font-size:42px">📚</div>
@@ -271,7 +277,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 <script>
 (function(){
 "use strict";
-var LS_KEY="shuati_bank_v1",LS_BANKS="shuati_banks_v1",LS_SEL="shuati_sel_v1";
+var LS_KEY="shuati_bank_v1",LS_BANKS="shuati_banks_v1",LS_SEL="shuati_sel_v1",LS_SESSION="shuati_session_v1",LS_PREFS="shuati_prefs_v1";
 function loadBanks(){try{return JSON.parse(localStorage.getItem(LS_BANKS))||[]}catch(e){return[]}}
 function saveBanks(a){localStorage.setItem(LS_BANKS,JSON.stringify(a))}
 function getBank(id){return loadBanks().find(function(b){return b.id===id})}
@@ -352,6 +358,7 @@ function delBank(id){
   var banks=loadBanks().filter(function(x){return x.id!==id});
   saveBanks(banks);
   if(App.selectedBankId===id){App.bank=null;App.selectedBankId=null;localStorage.removeItem(LS_SEL)}
+  var snap=loadSnapshot();if(snap&&snap.bankId===id)clearSnapshot();
   refreshHeaderButtons();renderHome();
 }
 function renderHome(){
@@ -369,6 +376,47 @@ function renderHome(){
   var sel=App.selectedBankId?getBank(App.selectedBankId):null;
   $("selBanner").style.display=sel?"":"none";
   if(sel)$("selName").textContent=sel.name;
+  renderResumeBanner();
+}
+
+/* 进度与设置保存 */
+function savePrefs(){try{localStorage.setItem(LS_PREFS,JSON.stringify({type:$("typeSel").value,shuffle:$("shuffleChk").checked,wrong:$("wrongChk").checked,auto:$("autoChk").checked}))}catch(e){}}
+function loadPrefs(){try{var p=JSON.parse(localStorage.getItem(LS_PREFS));if(!p)return;$("typeSel").value=p.type||"all";$("shuffleChk").checked=!!p.shuffle;$("wrongChk").checked=!!p.wrong;$("autoChk").checked=!!p.auto}catch(e){}}
+function snapshotSession(){
+  var s=App.session;if(!s||!App.bank)return;
+  try{localStorage.setItem(LS_SESSION,JSON.stringify({bankId:App.bank.id,mode:s.mode,order:s.order,pos:s.pos,correct:s.correct,wrong:s.wrong,answered:[...s.answered],wrongIds:[...s.wrongIds],results:s.results,curSel:[...App.sel],curText:App.userText,savedAt:Date.now()}))}catch(e){}
+}
+function loadSnapshot(){
+  try{
+    var d=JSON.parse(localStorage.getItem(LS_SESSION));
+    if(!d||!d.bankId||!d.order||!d.order.length)return null;
+    var b=getBank(d.bankId);if(!b)return null;
+    for(var i=0;i<d.order.length;i++){var ix=d.order[i];if(typeof ix!=="number"||ix<0||ix>=b.questions.length)return null}
+    return d;
+  }catch(e){return null}
+}
+function clearSnapshot(){localStorage.removeItem(LS_SESSION)}
+function renderResumeBanner(){
+  var d=loadSnapshot(),el=$("resumeBanner");
+  if(!d||!getBank(d.bankId)){el.classList.add("hidden");return}
+  $("resumeInfo").textContent="⏸ 上次进度："+getBank(d.bankId).name+" · "+(d.mode==="exam"?"模拟考试":"练习")+" · 已答 "+d.answered.length+"/"+d.order.length+" 题";
+  el.classList.remove("hidden");
+}
+function resumeSession(){
+  var d=loadSnapshot();
+  if(!d){toast("没有可恢复的进度");renderResumeBanner();return}
+  var b=getBank(d.bankId);
+  if(!b){toast("题库已不存在，进度已清除");clearSnapshot();renderResumeBanner();return}
+  App.bank=b;App.selectedBankId=d.bankId;localStorage.setItem(LS_SEL,d.bankId);
+  App.session={order:d.order,pos:d.pos,correct:d.correct,wrong:d.wrong,answered:new Set(d.answered),wrongIds:new Set(d.wrongIds),results:d.results||{},mode:d.mode||"practice"};
+  App.userText=d.curText||"";
+  $("ctrls").style.display=(App.session.mode==="exam")?"none":"";
+  refreshHeaderButtons();renderHome();show("studyView");renderQuestion();
+  if(!App.submitted){
+    App.sel=new Set(d.curSel||[]);App.userText=d.curText||"";updateOptStyles();
+    var inp=document.querySelector("#options .fillin");if(inp)inp.value=App.userText;
+  }
+  snapshotSession();toast("已恢复上次进度 ✔");
 }
 
 /* 列识别 */
@@ -533,7 +581,7 @@ function renderQuestion(){
   if(res){applyFeedback(q,res);ab.disabled=true;sb.textContent="下一题 ▶";sb.disabled=false}
   else{$("fb").textContent="";$("fb").className="feedback";ab.disabled=false;sb.textContent="提交答案";sb.disabled=false}
   eb.disabled=(App.session.mode==="exam");
-  updateTop();updateNav();
+  updateTop();updateNav();snapshotSession();
   window.scrollTo({top:0,behavior:"smooth"});
 }
 function renderOptions(q){
@@ -575,7 +623,7 @@ function submit(){
   var res={correct:correct,selArr:[...App.sel],userText:App.userText,viewed:false};
   App.session.results[idx]=res;App.session.answered.add(idx);
   if(correct)App.session.correct++;else{App.session.wrong++;App.session.wrongIds.add(idx)}
-  App.submitted=true;applyFeedback(q,res);updateTop();updateNav();
+  App.submitted=true;applyFeedback(q,res);updateTop();updateNav();snapshotSession();
   $("answerBtn").disabled=true;$("submitBtn").textContent="下一题 ▶";
   if(App.session.mode==="exam"||$("autoChk").checked)setTimeout(next,900);
 }
@@ -585,7 +633,7 @@ function reveal(){
   var q=curQ(),res={correct:false,selArr:[],userText:"",viewed:true};
   App.session.results[idx]=res;App.session.answered.add(idx);
   App.submitted=true;App.sel=new Set();
-  applyFeedback(q,res);updateTop();updateNav();
+  applyFeedback(q,res);updateTop();updateNav();snapshotSession();
   $("answerBtn").disabled=true;$("submitBtn").textContent="下一题 ▶";
 }
 function formatAnswer(q){
@@ -626,6 +674,7 @@ function updateTop(){
   $("okText").textContent=s.correct;$("noText").textContent=s.wrong;
 }
 function finish(){
+  clearSnapshot();
   var s=App.session,total=s.order.length;
   if(s.mode==="exam"){
     var earned=0,max=0,right=0,wrong=[];
@@ -674,30 +723,34 @@ function bind(){
   $("homeTplBtn").onclick=downloadTemplate;
   $("homeBtn").onclick=function(){show("homeView");renderHome();};
   $("importNewBtn").onclick=function(){show("importView")};
-  $("homePracticeBtn").onclick=function(){startSession(false)};
+  $("homePracticeBtn").onclick=function(){startSession($("wrongChk").checked)};
   $("homeExamBtn").onclick=startExam;
-  $("practiceBtn").onclick=function(){startSession(false)};
+  $("practiceBtn").onclick=function(){startSession($("wrongChk").checked)};
   $("examBtn").onclick=startExam;
   $("histBtn").onclick=function(){openHistory("homeView")};
   $("submitBtn").onclick=function(){if(App.submitted)next();else submit()};
   $("prevBtn").onclick=prev;$("nextBtn").onclick=next;
   $("answerBtn").onclick=reveal;
   $("explainBtn").onclick=function(){$("explain").classList.toggle("show")};
-  $("againBtn").onclick=function(){if(App.session&&App.session.mode==="exam")startExam();else startSession(false)};
-  $("wrongAgainBtn").onclick=function(){startSession(true)};
+  $("againBtn").onclick=function(){if(App.session&&App.session.mode==="exam")startExam();else startSession($("wrongChk").checked)};
+  $("wrongAgainBtn").onclick=function(){$("wrongChk").checked=true;savePrefs();startSession(true)};
+  $("resumeBtn").onclick=resumeSession;
+  $("discardBtn").onclick=function(){clearSnapshot();renderResumeBanner();toast("已放弃上次进度")};
   $("examWrongBtn").onclick=function(){openExamWrong(App.lastExamId,"doneView")};
   $("historyBtn").onclick=function(){openHistory("doneView")};
   $("historyBackBtn").onclick=function(){show(App.returnTo||"homeView")};
   $("examWrongBackBtn").onclick=function(){show(App.returnTo||"historyView")};
   $("backBtn").onclick=function(){show("homeView");renderHome()};
-  $("shuffleChk").onchange=function(){if(App.session)startSession($("wrongChk").checked)};
-  $("wrongChk").onchange=function(){if(App.session)startSession($("wrongChk").checked)};
-  $("typeSel").onchange=function(){if(App.session)startSession($("wrongChk").checked)};
+  $("shuffleChk").onchange=function(){savePrefs();if(App.session)startSession($("wrongChk").checked)};
+  $("wrongChk").onchange=function(){savePrefs();if(App.session)startSession($("wrongChk").checked)};
+  $("typeSel").onchange=function(){savePrefs();if(App.session)startSession($("wrongChk").checked)};
+  $("autoChk").onchange=savePrefs;
 }
 
 /* 启动 */
 function init(){
   bind();
+  loadPrefs();
   // 迁移旧数据
   var old=localStorage.getItem(LS_KEY);
   if(old&&!localStorage.getItem(LS_BANKS)){
