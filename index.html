@@ -740,17 +740,27 @@ function handleFile(file){
 }
 
 /* 练习会话 */
-/* 错题本（按题库持久保存：答错加入，答对移除） */
+/* 错题本（按题库持久保存）：答错加入；连对 2 次移除，中途答错计数清零 */
 function updateWrongBook(idx,correct){
-  if(!App.bank)return;
+  if(!App.bank)return null;
   var banks=loadBanks(),b=null;
   for(var i=0;i<banks.length;i++)if(banks[i].id===App.bank.id){b=banks[i];break}
-  if(!b)return;
-  var set=new Set(b.wrong||[]);
-  if(correct)set.delete(idx);else set.add(idx);
-  b.wrong=[...set];App.bank.wrong=b.wrong;
+  if(!b)return null;
+  var set=new Set(b.wrong||[]),st=b.wrongStreak||{},had=set.has(idx);
+  var graduated=false,need=0,added=false;
+  if(correct){
+    if(had){
+      var n=(st[idx]||0)+1;
+      if(n>=2){set.delete(idx);delete st[idx];graduated=true}
+      else{st[idx]=n;need=2-n}
+    }
+  }else{
+    set.add(idx);st[idx]=0;added=!had;
+  }
+  b.wrong=[...set];b.wrongStreak=st;App.bank.wrong=b.wrong;App.bank.wrongStreak=st;
   saveBanks(banks);
   refreshHeaderButtons();
+  return {graduated:graduated,need:need,added:added};
 }
 function buildOrder(onlyWrong){
   var idx=App.bank.questions.map(function(_,i){return i});
@@ -840,8 +850,11 @@ function submit(){
   var res={correct:correct,selArr:[...App.sel],userText:App.userText,viewed:false};
   App.session.results[idx]=res;App.session.answered.add(idx);
   if(correct)App.session.correct++;else{App.session.wrong++;App.session.wrongIds.add(idx)}
-  updateWrongBook(idx,correct);
-  App.submitted=true;applyFeedback(q,res);updateTop();updateNav();snapshotSession();
+  var wbRes=updateWrongBook(idx,correct);
+  App.submitted=true;applyFeedback(q,res);
+  if(wbRes&&wbRes.graduated)$("fb").textContent+="　🎉 已移出错题本";
+  else if(wbRes&&wbRes.need>0)$("fb").textContent+="　（再答对 "+wbRes.need+" 次移出错题本）";
+  updateTop();updateNav();snapshotSession();
   $("answerBtn").disabled=true;$("submitBtn").textContent="下一题 ▶";
   if(App.session.mode==="exam"||$("autoChk").checked)setTimeout(next,900);
 }
@@ -849,9 +862,12 @@ function reveal(){
   var idx=curOriginalIdx();
   if(App.session.results[idx])return;
   var q=curQ(),res={correct:false,selArr:[],userText:"",viewed:true};
-  App.session.results[idx]=res;App.session.answered.add(idx);updateWrongBook(idx,false);
+  App.session.results[idx]=res;App.session.answered.add(idx);
+  var wbRes=updateWrongBook(idx,false);
   App.submitted=true;App.sel=new Set();
-  applyFeedback(q,res);updateTop();updateNav();snapshotSession();
+  applyFeedback(q,res);
+  if(wbRes&&wbRes.added)$("fb").textContent+="　（已加入错题本）";
+  updateTop();updateNav();snapshotSession();
   $("answerBtn").disabled=true;$("submitBtn").textContent="下一题 ▶";
 }
 function formatAnswer(q){
