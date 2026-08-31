@@ -303,8 +303,12 @@ header .btn{flex:1;max-width:150px;text-align:center;line-height:1.2}
 
 /* ===== 移动端适配 ===== */
 @media (max-width:600px){
-  header{padding:8px 10px;gap:6px}
-  header .btn{padding:11px 8px;font-size:12.5px;line-height:1.2}
+  header{padding:8px 8px;gap:5px}
+  header .btn{padding:11px 6px;font-size:12.5px;line-height:1.2}
+}
+@media (max-width:350px){
+  header{gap:3px}
+  header .btn{padding:11px 4px;font-size:11.5px}
   .wrap{padding:12px 12px 32px}
   .card{padding:16px;border-radius:18px}
   #drop{padding:28px 12px}
@@ -324,6 +328,7 @@ header .btn{flex:1;max-width:150px;text-align:center;line-height:1.2}
   <button class="btn ghost" id="homeBtn">🏠 首页</button>
   <button class="btn ghost hidden" id="practiceBtn">题库练习</button>
   <button class="btn ghost hidden" id="examBtn">模拟考试</button>
+  <button class="btn ghost hidden" id="wrongBtn">错题练习</button>
   <button class="btn ghost hidden" id="histBtn">历史成绩</button>
 </header>
 
@@ -497,8 +502,10 @@ function saveHistory(arr){localStorage.setItem(EXAM_HISTORY_KEY,JSON.stringify(a
 function fmtTime(d){var p=function(n){return String(n).padStart(2,"0")};return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes())}
 function refreshHeaderButtons(){
   var hasBank=!!App.bank,hasHist=loadHistory().length>0;
+  var hasWrong=hasBank&&(App.bank.wrong||[]).length>0;
   $("practiceBtn").classList.toggle("hidden",!hasBank);
   $("examBtn").classList.toggle("hidden",!hasBank);
+  $("wrongBtn").classList.toggle("hidden",!hasWrong);
   $("histBtn").classList.toggle("hidden",!(hasBank||hasHist));
 }
 function openHistory(returnTo){
@@ -744,6 +751,7 @@ function updateWrongBook(idx,correct){
   if(correct)set.delete(idx);else set.add(idx);
   b.wrong=[...set];App.bank.wrong=b.wrong;
   saveBanks(banks);
+  refreshHeaderButtons();
 }
 function buildOrder(onlyWrong){
   var idx=App.bank.questions.map(function(_,i){return i});
@@ -935,6 +943,7 @@ function bind(){
   $("homeBtn").onclick=function(){show("homeView");renderHome();};
   $("importNewBtn").onclick=function(){show("importView")};
   $("practiceBtn").onclick=function(){startSession(false)};
+  $("wrongBtn").onclick=function(){$("wrongChk").checked=true;startSession(true)};
   $("examBtn").onclick=startExam;
   $("histBtn").onclick=function(){openHistory("homeView")};
   $("submitBtn").onclick=function(){if(App.submitted)next();else submit()};
