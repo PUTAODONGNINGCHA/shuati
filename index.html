@@ -172,7 +172,7 @@ header .btn{flex:1;max-width:150px;text-align:center;line-height:1.2}
 .fillin:focus{outline:none;border-color:rgba(79,70,229,.40);box-shadow:0 0 0 4px var(--ring)}
 
 .nav{display:flex;align-items:center;gap:10px;margin:16px 0 4px}
-.nav .feedback{flex:1;min-width:0;text-align:right;line-height:1.5}
+.nav .feedback{flex:1;min-width:0;text-align:right;line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 #explain{
   margin-top:16px;
@@ -327,9 +327,9 @@ header .btn{flex:1;max-width:150px;text-align:center;line-height:1.2}
 @media (min-width:601px){
   body.studying{height:100vh;overflow:hidden;display:flex;flex-direction:column}
   body.studying header{flex:none;position:static}
-  body.studying .wrap{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;padding-bottom:16px}
+  body.studying .wrap{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;overflow:hidden;padding-bottom:16px}
   body.studying #studyView{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
-  body.studying #qarea{flex:1;min-height:0;overflow-y:auto;padding-right:6px}
+  body.studying #qarea{flex:1;min-height:0;overflow-y:auto;scrollbar-gutter:stable;padding-right:6px}
   body.studying #studyView .topbar,
   body.studying #studyView .nav,
   body.studying #studyView .ctrls{flex:none}
