@@ -593,11 +593,11 @@ function renderHome(){
 }
 
 /* 进度与设置保存 */
-function savePrefs(){try{localStorage.setItem(LS_PREFS,JSON.stringify({type:$("typeSel").value,shuffle:$("shuffleChk").checked,wrong:$("wrongChk").checked,auto:$("autoChk").checked}))}catch(e){}}
-function loadPrefs(){try{var p=JSON.parse(localStorage.getItem(LS_PREFS));if(!p)return;$("typeSel").value=p.type||"all";$("shuffleChk").checked=!!p.shuffle;$("wrongChk").checked=!!p.wrong;$("autoChk").checked=!!p.auto}catch(e){}}
+function savePrefs(){try{localStorage.setItem(LS_PREFS,JSON.stringify({type:$("typeSel").value,shuffle:$("shuffleChk").checked,auto:$("autoChk").checked}))}catch(e){}}
+function loadPrefs(){try{var p=JSON.parse(localStorage.getItem(LS_PREFS));if(!p)return;$("typeSel").value=p.type||"all";$("shuffleChk").checked=!!p.shuffle;$("autoChk").checked=!!p.auto}catch(e){}}
 function snapshotSession(){
   var s=App.session;if(!s||!App.bank)return;
-  try{localStorage.setItem(LS_SESSION,JSON.stringify({bankId:App.bank.id,mode:s.mode,order:s.order,pos:s.pos,correct:s.correct,wrong:s.wrong,answered:[...s.answered],wrongIds:[...s.wrongIds],results:s.results,curSel:[...App.sel],curText:App.userText,savedAt:Date.now()}))}catch(e){}
+  try{localStorage.setItem(LS_SESSION,JSON.stringify({bankId:App.bank.id,mode:s.mode,wrongOnly:!!s.wrongOnly,order:s.order,pos:s.pos,correct:s.correct,wrong:s.wrong,answered:[...s.answered],wrongIds:[...s.wrongIds],results:s.results,curSel:[...App.sel],curText:App.userText,savedAt:Date.now()}))}catch(e){}
 }
 function loadSnapshot(){
   try{
@@ -621,7 +621,8 @@ function resumeSession(){
   var b=getBank(d.bankId);
   if(!b){toast("题库已不存在，进度已清除");clearSnapshot();renderResumeBanner();return}
   App.bank=b;App.selectedBankId=d.bankId;localStorage.setItem(LS_SEL,d.bankId);
-  App.session={order:d.order,pos:d.pos,correct:d.correct,wrong:d.wrong,answered:new Set(d.answered),wrongIds:new Set(d.wrongIds),results:d.results||{},mode:d.mode||"practice"};
+  App.session={order:d.order,pos:d.pos,correct:d.correct,wrong:d.wrong,answered:new Set(d.answered),wrongIds:new Set(d.wrongIds),results:d.results||{},mode:d.mode||"practice",wrongOnly:!!d.wrongOnly};
+  $("wrongChk").checked=!!App.session.wrongOnly;
   App.userText=d.curText||"";
   $("ctrls").style.display=(App.session.mode==="exam")?"none":"";
   refreshHeaderButtons();renderHome();show("studyView");renderQuestion();
@@ -771,7 +772,7 @@ function startSession(onlyWrong){
   if(!App.bank){toast("请先选择题库");return}
   var order=buildOrder(onlyWrong);
   if(!order.length){toast(onlyWrong?"错题本是空的 🎉 没有需要重练的题目":"没有符合条件的题目");return}
-  App.session={order:order,pos:0,correct:0,wrong:0,answered:new Set(),wrongIds:new Set(),results:{},mode:"practice"};
+  App.session={order:order,pos:0,correct:0,wrong:0,answered:new Set(),wrongIds:new Set(),results:{},mode:"practice",wrongOnly:!!onlyWrong};
   App.submitted=false;App.sel=new Set();App.userText="";
   $("ctrls").style.display="";
   show("studyView");renderQuestion();
@@ -948,17 +949,17 @@ function bind(){
   $("homeTplBtn").onclick=downloadTemplate;
   $("homeBtn").onclick=function(){show("homeView");renderHome();};
   $("importNewBtn").onclick=function(){show("importView")};
-  $("homePracticeBtn").onclick=function(){startSession($("wrongChk").checked)};
+  $("homePracticeBtn").onclick=function(){startSession(false)};
   $("homeExamBtn").onclick=startExam;
-  $("practiceBtn").onclick=function(){startSession($("wrongChk").checked)};
+  $("practiceBtn").onclick=function(){startSession(false)};
   $("examBtn").onclick=startExam;
   $("histBtn").onclick=function(){openHistory("homeView")};
   $("submitBtn").onclick=function(){if(App.submitted)next();else submit()};
   $("prevBtn").onclick=prev;$("nextBtn").onclick=next;
   $("answerBtn").onclick=reveal;
   $("explainBtn").onclick=function(){$("explain").classList.toggle("show")};
-  $("againBtn").onclick=function(){if(App.session&&App.session.mode==="exam")startExam();else startSession($("wrongChk").checked)};
-  $("wrongAgainBtn").onclick=function(){$("wrongChk").checked=true;savePrefs();startSession(true)};
+  $("againBtn").onclick=function(){if(App.session&&App.session.mode==="exam")startExam();else startSession(false)};
+  $("wrongAgainBtn").onclick=function(){$("wrongChk").checked=true;startSession(true)};
   $("resumeBtn").onclick=resumeSession;
   $("discardBtn").onclick=function(){clearSnapshot();renderResumeBanner();toast("已放弃上次进度")};
   $("examWrongBtn").onclick=function(){openExamWrong(App.lastExamId,"doneView")};
