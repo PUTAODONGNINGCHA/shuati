@@ -400,9 +400,7 @@ header .btn{flex:1;max-width:150px;text-align:center;line-height:1.2}
     <div class="actions">
       <span id="fb" class="feedback"></span>
       <span class="grow"></span>
-      <button class="btn" id="explainBtn">看解析</button>
-      <button class="btn" id="answerBtn">查看答案</button>
-      <button class="btn primary" id="submitBtn">提交答案</button>
+      <button class="btn primary hidden" id="submitBtn">提交答案</button>
     </div>
     <div class="ctrls" id="ctrls">
       <label>题型
@@ -804,10 +802,16 @@ function renderQuestion(){
   $("qText").textContent=q.question;
   renderOptions(q);
   $("explain").classList.remove("show");$("explainText").textContent=q.explanation||"（无解析）";
-  var ab=$("answerBtn"),eb=$("explainBtn"),sb=$("submitBtn");
-  if(res){applyFeedback(q,res);ab.disabled=true;sb.textContent="下一题 ▶";sb.disabled=false}
-  else{$("fb").textContent="";$("fb").className="feedback";ab.disabled=false;sb.textContent="提交答案";sb.disabled=false}
-  eb.disabled=(App.session.mode==="exam");
+  var sb=$("submitBtn"),immediate=(q.type==="single"||q.type==="judge");
+  if(res){
+    applyFeedback(q,res);
+    sb.classList.remove("hidden");sb.textContent="下一题 ▶";
+    if(App.session.mode!=="exam")$("explain").classList.add("show");
+  }else{
+    $("fb").textContent="";$("fb").className="feedback";
+    sb.classList.toggle("hidden",immediate);
+    sb.textContent="提交答案";
+  }
   updateTop();updateNav();snapshotSession();
   window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -855,20 +859,9 @@ function submit(){
   if(wbRes&&wbRes.graduated)$("fb").textContent+="　🎉 已移出错题本";
   else if(wbRes&&wbRes.need>0)$("fb").textContent+="　（再答对 "+wbRes.need+" 次移出错题本）";
   updateTop();updateNav();snapshotSession();
-  $("answerBtn").disabled=true;$("submitBtn").textContent="下一题 ▶";
+  $("submitBtn").classList.remove("hidden");$("submitBtn").textContent="下一题 ▶";
+  if(App.session.mode!=="exam")$("explain").classList.add("show");
   if(App.session.mode==="exam"||$("autoChk").checked)setTimeout(next,900);
-}
-function reveal(){
-  var idx=curOriginalIdx();
-  if(App.session.results[idx])return;
-  var q=curQ(),res={correct:false,selArr:[],userText:"",viewed:true};
-  App.session.results[idx]=res;App.session.answered.add(idx);
-  var wbRes=updateWrongBook(idx,false);
-  App.submitted=true;App.sel=new Set();
-  applyFeedback(q,res);
-  if(wbRes&&wbRes.added)$("fb").textContent+="　（已加入错题本）";
-  updateTop();updateNav();snapshotSession();
-  $("answerBtn").disabled=true;$("submitBtn").textContent="下一题 ▶";
 }
 function formatAnswer(q){
   var ans=q.answer||"";
@@ -961,10 +954,7 @@ function bind(){
   $("wrongBtn").onclick=function(){$("wrongChk").checked=true;startSession(true)};
   $("examBtn").onclick=startExam;
   $("histBtn").onclick=function(){openHistory("homeView")};
-  $("submitBtn").onclick=function(){if(App.submitted)next();else submit()};
-  $("prevBtn").onclick=prev;$("nextBtn").onclick=next;
-  $("answerBtn").onclick=reveal;
-  $("explainBtn").onclick=function(){$("explain").classList.toggle("show")};
+  $("submitBtn").onclick=function(){if(App.submitted)next();else submit()};$("prevBtn").onclick=prev;$("nextBtn").onclick=next;
   $("againBtn").onclick=function(){if(App.session&&App.session.mode==="exam")startExam();else startSession(false)};
   $("wrongAgainBtn").onclick=function(){$("wrongChk").checked=true;startSession(true)};
   $("resumeBtn").onclick=resumeSession;
